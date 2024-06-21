@@ -15,9 +15,12 @@
 # software. If not, they may be obtained at the above URLs.
 #
 
-RUN = argon2
-BENCH = bench
-GENKAT = genkat
+# Define OUTDIR variable for custom output directory
+OUTDIR ?= bin
+
+RUN = $(OUTDIR)/argon2
+BENCH = $(OUTDIR)/bench
+GENKAT = $(OUTDIR)/genkat
 ARGON2_VERSION ?= ZERO
 
 # installation parameters for staging area and final installation path
@@ -49,7 +52,7 @@ CI_CFLAGS := $(CFLAGS) -Werror=declaration-after-statement -D_FORTIFY_SOURCE=2 \
 				-Wextra -Wno-type-limits -Werror -coverage -DTEST_LARGE_RAM
 
 OPTTARGET ?= native
-OPTTEST := $(shell $(CC) -Iinclude -Isrc -march=$(OPTTARGET) src/opt.c -c \
+OPTTEST ?= $(shell $(CC) -Iinclude -Isrc -march=$(OPTTARGET) src/opt.c -c \
 			-o /dev/null 2>/dev/null; echo $$?)
 # Detect compatible platform
 ifneq ($(OPTTEST), 0)
@@ -62,7 +65,7 @@ $(info Building with optimizations for $(OPTTARGET))
 endif
 
 BUILD_PATH := $(shell pwd)
-KERNEL_NAME := $(shell uname -s)
+KERNEL_NAME ?= $(shell uname -s)
 MACHINE_NAME := $(shell uname -m)
 
 LIB_NAME = argon2
@@ -116,11 +119,11 @@ ifeq ($(CC), clang)
 endif
 endif
 
-LIB_SH := lib$(LIB_NAME).$(LIB_EXT)
-LIB_ST := lib$(LIB_NAME).a
+LIB_SH := $(OUTDIR)/lib$(LIB_NAME).$(LIB_EXT)
+LIB_ST := $(OUTDIR)/lib$(LIB_NAME).a
 
 ifdef LINKED_LIB_EXT
-LINKED_LIB_SH := lib$(LIB_NAME).$(LINKED_LIB_EXT)
+LINKED_LIB_SH := $(OUTDIR)/lib$(LIB_NAME).$(LINKED_LIB_EXT)
 endif
 
 # Some systems don't provide an unprefixed ar when cross-compiling.
@@ -163,6 +166,9 @@ INST_INCLUDE = $(DESTDIR)$(PREFIX)/$(INCLUDE_REL)
 INST_LIBRARY = $(DESTDIR)$(PREFIX)/$(LIBRARY_REL)
 INST_BINARY = $(DESTDIR)$(PREFIX)/$(BINARY_REL)
 INST_PKGCONFIG = $(DESTDIR)$(PREFIX)/$(PKGCONFIG_REL)/pkgconfig
+
+# Create output directory
+$(shell mkdir -p $(OUTDIR))
 
 # main target
 .PHONY: all

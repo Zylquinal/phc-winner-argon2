@@ -1,0 +1,26 @@
+name: Docker Build and Archive
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set script permissions
+        run: chmod +x ./build.sh
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Run Docker command
+        run: docker run -v ${PWD}:/app ghcr.io/zylquinal/crosscompile-env:master /app/build.sh
+
+      - name: Archive dist folder
+        uses: actions/upload-artifact@v2
+        with:
+          name: dist-archive
+          path: dist/
