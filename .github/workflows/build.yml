@@ -24,3 +24,17 @@ jobs:
         with:
           name: dist-archive
           path: dist/
+
+      - name: Checksums & Archive
+        run: |
+          sudo chown -R $(whoami) ./dist
+          cd dist
+          find . -type f ! -name ".*" -exec sha256sum {} \; > checksums.txt
+          zip -r archive.zip *
+
+      - name: Create Release and Upload Asset
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: latest
+          body_path: dist/checksums.txt
+          files: ./dist/archive.zip
